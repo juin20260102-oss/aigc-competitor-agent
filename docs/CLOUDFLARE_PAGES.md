@@ -50,7 +50,7 @@
 如果您希望每次向 GitHub push 代码时自动完成网页构建与上线：
 
 1. 在 Cloudflare Pages 创建页面时选择 **“连接到 Git (Connect to Git)”**；
-2. 授权并选择您的仓库：`aigc-competitor-agent-intelligence`；
+2. 授权并选择您的仓库：`aigc-competitor-agent`；
 3. 构建设置填写：
    * **框架预设 (Framework preset)**：选择 `None`
    * **构建命令 (Build command)**：`python tools/build_static_site.py`

@@ -102,8 +102,8 @@ flowchart LR
 ### 1. 获取项目
 
 ```bash
-git clone https://github.com/juin20260102-oss/aigc-competitor-agent-intelligence.git
-cd aigc-competitor-agent-intelligence
+git clone https://github.com/juin20260102-oss/aigc-competitor-agent.git
+cd aigc-competitor-agent
 ```
 
 以下命令均需在项目根目录执行。
