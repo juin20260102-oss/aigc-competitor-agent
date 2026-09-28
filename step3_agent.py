@@ -693,7 +693,9 @@ async def compare_all_node(state: AgentState) -> dict:
             first_time_urls.append(url)
         if is_changed:
             changed_urls.append(url)
-        tracker.add(usage)
+        # 预筛判定无变化的站点不调用模型，usage 为 None，不能计入模型调用数。
+        if usage is not None:
+            tracker.add(usage)
 
     emit_run_event(
         evidence.run_dir(state["run_id"]),

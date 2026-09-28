@@ -6,6 +6,8 @@ import json
 import re
 from dataclasses import asdict, dataclass
 
+from agent_utils import normalize_content
+
 
 ALLOWED_CONFIDENCE = {"high", "medium", "low"}
 ALLOWED_RATINGS = {"S", "A", "B", "C", "NA"}
@@ -85,14 +87,24 @@ def _extract_json(raw: str) -> dict:
     return value
 
 
+# 模型常把差异块的行首标记（"+ " / "- "）一并抄进引文。
+_DIFF_MARKER_RE = re.compile(r"^[+-]\s+")
+
+
+def _strip_diff_marker(quote: str) -> str:
+    return _DIFF_MARKER_RE.sub("", quote, count=1)
+
+
 def _quote_matches(quote: str, source: str) -> bool:
     if not quote or not source:
         return False
-    if quote in source:
-        return True
     compact_quote = " ".join(quote.split())
-    compact_source = " ".join(source.split())
-    return compact_quote in compact_source
+    # 差异块基于规范化正文生成（图片替换为 alt、链接去追踪参数），
+    # 所以引文既可能出现在原文里，也可能只在规范化正文里连续出现。
+    for candidate in (source, normalize_content(source)):
+        if quote in candidate or compact_quote in " ".join(candidate.split()):
+            return True
+    return False
 
 
 def parse_and_validate_analysis(
@@ -129,8 +141,8 @@ def parse_and_validate_analysis(
         claim_text = _clean(item.get("claim"), limit=500)
         if not claim_text:
             continue
-        old_quote = _clean(item.get("old_quote"), limit=300)
-        new_quote = _clean(item.get("new_quote"), limit=300)
+        old_quote = _strip_diff_marker(_clean(item.get("old_quote"), limit=300))
+        new_quote = _strip_diff_marker(_clean(item.get("new_quote"), limit=300))
         confidence = _clean(item.get("confidence"), limit=10).lower()
         if confidence not in ALLOWED_CONFIDENCE:
             confidence = "low"
