@@ -1,22 +1,9 @@
 name: Deploy dashboard
 
-# 静态看板过去只能靠本地 deploy_pages.bat 手动发布，导致仓库已修复、线上
-# 仍是旧版本。这里把「构建 + 部署」接进 CI：
-#   - push 到 main 且影响站点内容时自动发布；
-#   - 每日 Agent 跑完后自动发布，让公网看板跟上最新一期日报；
-#   - 也可手动触发。
+# 看板默认由本地 deploy_pages.bat 手动发布（Cloudflare 凭据在本机环境变量中）。
+# 这里只保留手动触发：需要时在 Actions 页面运行，届时须先在仓库 Secrets 配置
+# CLOUDFLARE_ACCOUNT_ID、CLOUDFLARE_API_TOKEN 和 R2_BUCKET。
 on:
-  push:
-    branches: [main]
-    paths:
-      - "data/**"
-      - "reports/**"
-      - "tools/build_static_site.py"
-      - "agent_utils.py"
-      - ".github/workflows/deploy-pages.yml"
-  workflow_run:
-    workflows: ["Daily competitor monitor"]
-    types: [completed]
   workflow_dispatch:
 
 permissions:
@@ -28,8 +15,6 @@ concurrency:
 
 jobs:
   deploy:
-    # workflow_run 会在被触发的工作流失败时也触发，这里只在成功后才发布。
-    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
